@@ -35,7 +35,7 @@
     const appear = smooth(clamp((p - 0.09 - index * 0.006) / 0.12));
     const orbit = clamp((p - 0.14) / 0.46);
     const contract = smooth(clamp((p - 0.58) / 0.22));
-    const settle = smooth(clamp((p - 0.75) / 0.06));  // settle rápido: todo desaparece antes del flash
+    const settle = smooth(clamp((p - 0.71) / 0.08));  // frutas COMPLETAMENTE gone en p=0.79
     const milkX = 640, milkY = 438;
     const baseAngle = (index / COUNT) * Math.PI * 2;
     const angle = baseAngle + p * Math.PI * 6.8;
@@ -122,8 +122,8 @@
       for (let i = 0; i < fruitEls.length; i++) {
         const pose = getFruitPose(i, p);
         const el = fruitEls[i];
-        // durante settle, frutas bajan a z<65 para quedar debajo del flash
-        const sz = smooth(clamp((p - 0.75) / 0.06));
+        // durante settle, frutas bajan a z<65 → debajo del flash (z:65)
+        const sz = smooth(clamp((p - 0.71) / 0.08));
         el.style.zIndex = sz > 0.05 ? Math.min(pose.z, 55) : pose.z;
         el.style.opacity = pose.opacity.toFixed(3);
         // Iluminación por profundidad: delante = más brillo/saturación + glow; detrás = apagado + blur
@@ -140,20 +140,20 @@
 
       // ── final: la fruta ATERRIZA en el bol (en el escenario, alineada) y
       //    luego el escenario se desplaza para llevar el bol al CENTRO ──
-      // flash cinematográfico: pico en p=0.80, cubre la transición completa
-      // el bol vive en z:68 (por encima del flash z:65) → siempre visible y limpio
-      const fl = smooth(clamp(1 - Math.abs(p - 0.80) / 0.04));
+      // flash sólido (sin blend mode): cubre TODO lo que hay debajo (z<65) en p=0.79-0.81
+      // el bol (z:68) ya está por encima → aparece DESPUÉS del pico del flash
+      const fl = smooth(clamp(1 - Math.abs(p - 0.795) / 0.035));
       if (flash) {
         flash.style.opacity = fl.toFixed(3);
-        flash.style.transform = "translate(-50%,-50%) scale(" + (0.2 + fl * 2.2).toFixed(3) + ")";
+        flash.style.transform = "translate(-50%,-50%) scale(" + (0.1 + fl * 1.9).toFixed(3) + ")";
       }
-      // bol emerge desde la luz del flash (z:68 > z:65, siempre por encima)
-      const finalBowl = smooth(clamp((p - 0.79) / 0.09));  // aparece durante/tras el flash
-      const rise = smooth(clamp((p - 0.88) / 0.12));        // sube solo cuando escena está limpia
+      // bol aparece SOLO cuando frutas y leche ya desaparecieron (p≥0.81)
+      // gap de ~0.02 entre "frutas gone" (0.79) y "bol aparece" (0.81) cubierto por el flash
+      const finalBowl = smooth(clamp((p - 0.81) / 0.09));
+      const rise = smooth(clamp((p - 0.89) / 0.11));
       if (bowlFilled) {
         bowlFilled.style.opacity = finalBowl.toFixed(3);
-        // empieza ligeramente grande (1.08) y baja a 1.0 — efecto "descender desde la luz"
-        bowlFilled.style.transform = "translate(-50%,-50%) scale(" + (lerp(1.08, 1, finalBowl) * lerp(1, 1.14, rise)).toFixed(3) + ")";
+        bowlFilled.style.transform = "translate(-50%,-50%) scale(" + (lerp(1.06, 1, finalBowl) * lerp(1, 1.13, rise)).toFixed(3) + ")";
       }
       if (bowlShadow) bowlShadow.style.opacity = (finalBowl * 0.55).toFixed(3);
       // desplazar el ESCENARIO para centrar el bol (bol en stage-local 619,576)
