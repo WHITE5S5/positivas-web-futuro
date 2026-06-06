@@ -35,7 +35,7 @@
     const appear = smooth(clamp((p - 0.09 - index * 0.006) / 0.12));
     const orbit = clamp((p - 0.14) / 0.46);
     const contract = smooth(clamp((p - 0.58) / 0.22));
-    const settle = smooth(clamp((p - 0.78) / 0.18));
+    const settle = smooth(clamp((p - 0.76) / 0.14));
     const milkX = 640, milkY = 438;
     const baseAngle = (index / COUNT) * Math.PI * 2;
     const angle = baseAngle + p * Math.PI * 6.8;
@@ -45,11 +45,14 @@
     const helixX = milkX + Math.cos(angle) * radius;
     const mouthRow = index % 8;
     const mouthLane = index > 7 ? 1 : 0;
-    const mouthX = milkX - 155 + mouthRow * 44 + (mouthLane ? 18 : 0);
-    const mouthY = 678 + mouthLane * 34 + Math.sin(mouthRow * 0.8) * 10;
+    // Centro en x=619 (72% de 860 = posición real del bol), rango ±140
+    const bowlCX = 619;
+    const mouthX = bowlCX - 140 + mouthRow * 40 + (mouthLane ? 10 : 0);
+    // y≈540 = dentro del bol (centro del bol en y=576, apertura superior)
+    const mouthY = 540 + mouthLane * 28 + Math.sin(mouthRow * 0.7) * 14;
     const x = lerp(helixX, mouthX, contract);
     const y = lerp(helixY, mouthY, contract);
-    const scale = lerp(0.62 + (depth + 1) * 0.16, 0.26 + (index % 3) * 0.025, settle);
+    const scale = lerp(0.62 + (depth + 1) * 0.16, 0.20 + (index % 3) * 0.02, settle);
     const opacity = appear * lerp(0.92, 0, settle);
     const rotate = (angle * 180) / Math.PI + p * 220;
     const blur = Math.abs(depth) * (1 - contract) * 5;
@@ -112,7 +115,8 @@
       milk.style.width = lerp(188, 62, smooth(clamp((p - 0.56) / 0.28))) + "px";
       milk.style.height = lerp(1420, 330, smooth(clamp((p - 0.54) / 0.34))) + "px";
       milk.style.top = lerp(-315, 520, smooth(clamp((p - 0.56) / 0.3))) + "px";
-      milk.style.opacity = (p > 0.82 ? clamp(1 - (p - 0.82) / 0.12) : 1).toFixed(3);
+      // leche se esfuma antes de que el stage empiece a moverse (rise en 0.87)
+      milk.style.opacity = (p > 0.72 ? clamp(1 - (p - 0.72) / 0.12) : 1).toFixed(3);
 
       // ── frutas ──
       for (let i = 0; i < fruitEls.length; i++) {
@@ -134,8 +138,8 @@
 
       // ── final: la fruta ATERRIZA en el bol (en el escenario, alineada) y
       //    luego el escenario se desplaza para llevar el bol al CENTRO ──
-      const finalBowl = smooth(clamp((p - 0.7) / 0.16));    // el bol lleno se revela donde cae la fruta
-      const rise = smooth(clamp((p - 0.86) / 0.14));         // sube y se centra
+      const finalBowl = smooth(clamp((p - 0.72) / 0.15));   // bol aparece cuando frutas llegan
+      const rise = smooth(clamp((p - 0.87) / 0.13));         // sube solo cuando leche+frutas ya desaparecieron
       if (bowlFilled) {
         bowlFilled.style.opacity = finalBowl.toFixed(3);
         bowlFilled.style.transform = "translate(-50%,-50%) scale(" + (lerp(0.92, 1, finalBowl) * lerp(1, 1.12, rise)).toFixed(3) + ")";
@@ -151,13 +155,13 @@
       const restX = cell.left + cell.width / 2 + 189 * stageScale;
       const restY = cell.top + cell.height / 2 + 126 * stageScale;
       const TX = (window.innerWidth * 0.5 - restX) * rise;
-      const TY = (window.innerHeight * 0.4 - restY) * rise;
+      const TY = (window.innerHeight * 0.43 - restY) * rise;
       stageInner.style.transform = "translate(" + TX.toFixed(1) + "px," + TY.toFixed(1) + "px) translate(-50%,-50%) scale(" + stageScale.toFixed(4) + ")";
       // remate centrado (titular + CTA)
       if (finaleCopy) {
-        const fc = smooth(clamp((p - 0.9) / 0.1));
+        const fc = smooth(clamp((p - 0.93) / 0.07));
         finaleCopy.style.opacity = fc.toFixed(3);
-        finaleCopy.style.transform = "translate(-50%," + lerp(26, 0, fc).toFixed(1) + "px)";
+        finaleCopy.style.transform = "translate(-50%," + lerp(22, 0, fc).toFixed(1) + "px)";
       }
 
       // ── copy / guía / badge / barra ──
